@@ -19,3 +19,11 @@ func (p *product) Store(m *domain.Product) error {
 
 	return nil
 }
+
+func (p *product) Fetch(ctr *domain.ProductCriteria) (*domain.Product, error) {
+	product, err := p.productRepo.Fetch(ctr);
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}

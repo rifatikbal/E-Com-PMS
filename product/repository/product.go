@@ -23,3 +23,17 @@ func (p *product) Store(m *domain.Product) error {
 
 	return nil
 }
+
+func (p *product) Fetch(ctr *domain.ProductCriteria) (*domain.Product, error) {
+	product := &domain.Product{}
+
+	if err := p.GormDB.
+		Table("products").
+		Where("name = ?",
+			*ctr.Name).
+		Scan(&product).Error; err != nil {
+		return nil, err
+	}
+
+	return product, nil
+}

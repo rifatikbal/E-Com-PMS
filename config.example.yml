@@ -7,5 +7,5 @@ DB:
   port: 3306
   user: root
   pass: secret
-  name: product
+  name: pms
   conn_max_lifetime: 30

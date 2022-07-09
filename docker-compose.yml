@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   consul:
-    container_name: gateway_consul
+    container_name: consul
     image: consul:latest
     ports:
       - 8500:8500
@@ -11,9 +11,11 @@ services:
     image: mysql:latest
     environment:
       - "MYSQL_ROOT_PASSWORD=secret"
-      - "MYSQL_DATABASE= pms"
     ports:
       - 3306:3306
+    volumes:
+      - ./data:/var/lib/mysql
+
   adminer:
     image: adminer
     ports:
