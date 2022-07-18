@@ -1,3 +1,4 @@
 *.exe
 E-Com-PMS
 LICENSE
+*.log*

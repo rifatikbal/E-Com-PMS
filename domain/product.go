@@ -19,15 +19,21 @@ type Product struct {
 }
 
 type ProductCriteria struct {
-	Name *string `json:"product_name"`
+	Name     *string `json:"product_name"`
+	Genr     *string `json:"genr"`
+	PageSize *int    `json:"page_size"`
+	Page     *int    `json:"page"`
+	Offset   *int    `json:"offset"`
 }
 
 type ProductRepository interface {
 	Store(m *Product) error
 	Fetch(ctr *ProductCriteria) (*Product, error)
+	FetchProductCount(ctr *ProductCriteria) (*uint64, error)
 }
 
 type ProductUseCase interface {
 	Store(m *Product) error
 	Fetch(ctr *ProductCriteria) (*Product, error)
+	FetchProductCount(ctr *ProductCriteria) (*uint64, error)
 }

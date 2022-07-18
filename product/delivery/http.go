@@ -5,8 +5,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rifatikbal/E-Com-PMS/domain"
+	"github.com/rifatikbal/E-Com-PMS/internal/utils"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ProductHandler struct {
@@ -21,7 +23,7 @@ func New(r *chi.Mux, uc domain.ProductUseCase) {
 
 	r.Route("/product", func(r chi.Router) {
 		r.Post("/", handler.StoreProduct)
-		r.Get("/{name}", handler.GetProduct)
+		r.Get("/", handler.GetProduct)
 	})
 
 }
@@ -47,18 +49,53 @@ func (p *ProductHandler) StoreProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
-	if chi.URLParam(r, "name") == "" {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{
-			"error": "name required",
-		})
-		return
+
+	var ctr *domain.ProductCriteria
+	name := r.URL.Query().Get("name")
+	if name != "" {
+		ctr.Name = &name
 	}
 
-	productName := chi.URLParam(r, "name")
+	genr := r.URL.Query().Get("genr")
+	if genr != "" {
+		ctr.Genr = &genr
+	}
 
-	ctr := &domain.ProductCriteria{
-		Name: &productName,
+	if r.URL.Query().Get("page") != "" {
+		page, err := strconv.Atoi(r.URL.Query().Get("page"))
+		if err != nil {
+			log.Println("could not parsee page")
+			return
+		}
+		ctr.Page = &page
+	}
+
+	if r.URL.Query().Get("page_size") != "" {
+		pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+		if err != nil {
+			log.Println("could not parsee page_size")
+			return
+		}
+		ctr.PageSize = &pageSize
+	}
+
+	var count *uint64
+	if ctr.PageSize != nil {
+		count, err := p.productUseCase.FetchProductCount(ctr)
+		if err != nil {
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{
+				"error": err.Error(),
+			})
+		}
+	}
+
+	var total, offset int
+	if count != nil {
+		total = int((*count) / uint64(*ctr.PageSize))
+		offset = int(*ctr.PageSize) * (*ctr.Page - 1)
+
+		ctr.Offset = &offset
 	}
 
 	product, err := p.productUseCase.Fetch(ctr)
@@ -70,6 +107,15 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pagination := utils.Pagination{
+		Total: int(*count),
+	}
+
+	resp := utils.Response{
+		Data:       product,
+		Pagination: pagination,
+	}
+
 	render.Status(r, http.StatusOK)
-	render.JSON(w, r, product)
+	render.JSON(w, r, resp)
 }

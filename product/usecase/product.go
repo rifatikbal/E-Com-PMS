@@ -21,9 +21,20 @@ func (p *product) Store(m *domain.Product) error {
 }
 
 func (p *product) Fetch(ctr *domain.ProductCriteria) (*domain.Product, error) {
-	product, err := p.productRepo.Fetch(ctr);
+
+	product, err := p.productRepo.Fetch(ctr)
 	if err != nil {
 		return nil, err
 	}
+
 	return product, nil
+}
+
+func (p *product) FetchProductCount(ctr *domain.ProductCriteria) (*uint64, error) {
+	count, err := p.productRepo.FetchProductCount(ctr)
+	if err != nil {
+		return nil, err
+	}
+
+	return count, nil
 }
