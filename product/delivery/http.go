@@ -81,7 +81,8 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	var count *uint64
 	if ctr.PageSize != nil {
-		count, err := p.productUseCase.FetchProductCount(ctr)
+		var err error
+		count, err = p.productUseCase.FetchProductCount(ctr)
 		if err != nil {
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, map[string]string{
@@ -90,9 +91,8 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var total, offset int
+	var offset int
 	if count != nil {
-		total = int((*count) / uint64(*ctr.PageSize))
 		offset = int(*ctr.PageSize) * (*ctr.Page - 1)
 
 		ctr.Offset = &offset
