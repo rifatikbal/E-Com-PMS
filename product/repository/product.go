@@ -49,6 +49,32 @@ func (p *product) Fetch(ctr *domain.ProductCriteria) (*domain.Product, error) {
 	return product, nil
 }
 
+func (p *product) Delete(ctr *domain.ProductCriteria) error {
+	m := &domain.Product{}
+
+	if err := p.GormDB.
+		Delete(m).
+		Where(`
+			hashed_id = ?
+			name = ?`,
+			*ctr.Name,
+			*ctr.HashedId).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *product) Update(m *domain.Product) error {
+	if err := p.GormDB.
+		Save(m).
+		Where(`
+			hashed_id = ?`,
+			m.HashedId).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *product) FetchProductCount(ctr *domain.ProductCriteria) (*uint64, error) {
 	var productCount *uint64
 	q := p.GormDB.
