@@ -24,6 +24,8 @@ func New(r *chi.Mux, uc domain.ProductUseCase) {
 	r.Route("/product", func(r chi.Router) {
 		r.Post("/", handler.StoreProduct)
 		r.Get("/", handler.GetProduct)
+		r.Delete("/", handler.DeleteProduct)
+		r.Put("/", handler.UpdateProduct)
 	})
 
 }
@@ -118,4 +120,58 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, resp)
+}
+
+func (p *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("hashed_id") == "" {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, map[string]string{
+			"error": "hashed_id required",
+		})
+	}
+
+	if r.URL.Query().Get("name") == "" {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, map[string]string{
+			"error": "name required",
+		})
+	}
+	hashedId := r.URL.Query().Get("hashed_id")
+	name := r.URL.Query().Get("name")
+
+	productCtr := &domain.ProductCriteria{
+		HashedId: &hashedId,
+		Name:     &name,
+	}
+
+	if err := p.productUseCase.Delete(productCtr); err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	render.Status(w, http.StatusAccepted)
+	render.JSON(w, r, map[string]string{
+		"success": "true",
+	})
+}
+
+func (p *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	product := &domain.Product{}
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+		log.Println(err)
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, map[string]string{
+			"error": "couldn't parse body",
+		})
+		return
+	}
+
+	if err := p.productUseCase.Update(product); err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, map[string]string{
+			"error": err.Error(),
+		})
+	}
 }

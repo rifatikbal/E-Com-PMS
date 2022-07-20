@@ -6,6 +6,7 @@ type Product struct {
 	ID          uint64    `json:"id"`
 	Name        string    `json:"name"`
 	Genr        string    `json:"genr"`
+	HashedId    *string   `json:"hashed_id"`
 	Type        uint      `json:"type"`
 	Price       float64   `json:"price"`
 	Discount    float64   `json:"discount"`
@@ -21,6 +22,7 @@ type Product struct {
 type ProductCriteria struct {
 	Name     *string `json:"product_name"`
 	Genr     *string `json:"genr"`
+	HashedId *string `json:"hashed_id"`
 	PageSize *int    `json:"page_size"`
 	Page     *int    `json:"page"`
 	Offset   *int    `json:"offset"`
@@ -29,11 +31,15 @@ type ProductCriteria struct {
 type ProductRepository interface {
 	Store(m *Product) error
 	Fetch(ctr *ProductCriteria) (*Product, error)
+	Delete(ctr *ProductCriteria) error
+	Update(m *Product) error
 	FetchProductCount(ctr *ProductCriteria) (*uint64, error)
 }
 
 type ProductUseCase interface {
 	Store(m *Product) error
 	Fetch(ctr *ProductCriteria) (*Product, error)
+	Delete(ctr *ProductCriteria) error
+	Update(m *Product) error
 	FetchProductCount(ctr *ProductCriteria) (*uint64, error)
 }

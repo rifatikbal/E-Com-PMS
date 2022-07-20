@@ -30,6 +30,20 @@ func (p *product) Fetch(ctr *domain.ProductCriteria) (*domain.Product, error) {
 	return product, nil
 }
 
+func (p *product) Update(m *domain.Product) error {
+	if err := p.productRepo.Update(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *product) Delete(ctr *domain.ProductCriteria) error {
+	if err := p.productRepo.Delete(ctr); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *product) FetchProductCount(ctr *domain.ProductCriteria) (*uint64, error) {
 	count, err := p.productRepo.FetchProductCount(ctr)
 	if err != nil {
